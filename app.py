@@ -8,6 +8,9 @@ from dash import DiskcacheManager, CeleryManager
 from func.func_dash.app_content import  button_group
 
 
+# Запуск приложения считывания
+os.system('python output.py &')
+
 # Для background
 if 'REDIS_URL' in os.environ:
     # Use Redis & Celery if REDIS_URL set as an env variable
