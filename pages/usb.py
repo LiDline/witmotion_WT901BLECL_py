@@ -9,11 +9,10 @@ import re
 from func.general_operations import create_table, decoded_data
 from func.func_dash.app_content import header_page
 from func.func_dash.inputs import input_adress
-from func.func_dash.buttons import start
+from func.func_dash.buttons import connection, start
 
 
 dash.register_page(__name__)
-
 #___________________________________________________________________________________________________
 
 # Client-side function (for performance) that updates the graph.
@@ -37,37 +36,48 @@ layout = html.Div([
     # Input
     dbc.Row([
             dbc.Col([
-                input_adress()
-                ], width={"size": 3})
+                    input_adress()
+                    ], width={"size": 3}),
+            WebSocket(id="ws", url="ws://127.0.0.1:5000/ws"),
+    # Connection        
+            dbc.Col([
+                    connection()
+                    ]),
+            dbc.Col([
+                    html.Div(id='message')
+                     ])
             ], className='other'),
-    
-    # Кнопка старт
     dbc.Row([
-        dbc.Col([
-            start()
-            ])
-        ], className='other'),
-    # График
-    html.Div(id='plot')
+            html.Div(start())
+            ], className='other')
     ])
 
+'''Callback'''
 
-# Кнопка старт
+# Кнопки
 @dash.callback(
-    [Output('plot', 'children')], 
-    [Input('button_start', 'n_clicks')],
+    Output("ws", "send"), 
+    Input('button_connection', 'n_clicks'),
+    Input('button_start', 'n_clicks'),
     State('input', 'value'),
-    prevent_initial_call=True)
-def start_button(n_clicks, values):
-    res = dbc.Row([
-        dbc.Col([
-            dcc.Graph(id="graph"), WebSocket(id="ws", url="ws://127.0.0.1:5000/WT901"),
-            ]),
-        ])
-    return [res]
+    prevent_initial_call=True,
+    )
+def send(bt1, bt2, values):
+    button_id = dash.ctx.triggered_id
+    return values
+
+# Приём состояния подключения
+@dash.callback(
+    Output("message", "children"),
+    [Input("ws", 'message')],
+    prevent_initial_call=True
+    )
+def message(e):
+        return f"Response from websocket: {e['data']}"
 
 
 dash.clientside_callback(update_graph, 
                         Output("graph", "figure"), 
                         Input("ws", "message"),
+                        prevent_initial_call=True
                         )
