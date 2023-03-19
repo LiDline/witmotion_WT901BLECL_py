@@ -23,7 +23,7 @@ else:
 '''App'''
 
 # Запуск приложения считывания
-os.system('python output.py &')
+# os.system('python output.py &')
 
 app = DashProxy(name="WT901BLE", external_stylesheets=[dbc.themes.BOOTSTRAP],
                 use_pages=True,

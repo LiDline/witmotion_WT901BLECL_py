@@ -19,9 +19,9 @@ async def random_data():
     open = False
     
     while open == False:
-        adress = await websocket.receive()
+        address = await websocket.receive()
         try:
-            socket = serial.Serial(adress, 115200, timeout=10)
+            socket = serial.Serial(address, 115200, timeout=10)
             await websocket.send('sensor is connected')
             open = socket.is_open
         except:

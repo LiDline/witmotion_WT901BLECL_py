@@ -6,9 +6,8 @@ import dash
 import re
 
 
-from func.general_operations import create_table, decoded_data
 from func.func_dash.app_content import header_page
-from func.func_dash.inputs import input_adress
+from func.func_dash.inputs import input_address
 from func.func_dash.buttons import connection, start
 
 
@@ -36,7 +35,7 @@ layout = html.Div([
     # Input
     dbc.Row([
             dbc.Col([
-                    input_adress()
+                    input_address()
                     ], width={"size": 3}),
             WebSocket(id="ws", url="ws://127.0.0.1:5000/ws"),
     # Connection        
