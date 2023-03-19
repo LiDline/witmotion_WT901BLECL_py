@@ -1,6 +1,10 @@
-import serial
+class Counter():
+        count = 0
+        
+        def __init__(self):
 
-res = serial.Serial('/dev/ttyUSB0', 115200, timeout=10)
-# res = type(res)
+            Counter.count +=1
 
-print(res.__dict__)
+                
+counter = Counter()
+print(counter.count)

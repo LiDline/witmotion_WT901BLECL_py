@@ -9,6 +9,7 @@ import re
 from func.func_dash.app_content import header_page
 from func.func_dash.inputs import input_address
 from func.func_dash.buttons import connection, start
+from func.counter import Counter
 
 
 dash.register_page(__name__)
@@ -63,16 +64,24 @@ layout = html.Div([
     )
 def send(bt1, bt2, values):
     button_id = dash.ctx.triggered_id
-    return values
+    
+    # Отправляем адрес
+    if button_id == 'button_connection':
+        button_counter = Counter()
+        return f'{button_counter.count}. ' + values
+    elif button_id == 'button_start':
+        button_counter = Counter()
+        return f'{button_counter.count}. ' + button_id
 
-# Приём состояния подключения
-@dash.callback(
-    Output("message", "children"),
-    [Input("ws", 'message')],
-    prevent_initial_call=True
-    )
-def message(e):
-        return f"Response from websocket: {e['data']}"
+# # Приём состояния подключения
+# @dash.callback(
+#     Output("message", "children"),
+#     [Input("ws", 'message')],
+#     prevent_initial_call=True
+#     )
+# def message(e):
+#         if e == 'sensor is connected' or e == "sensor isn't connected":
+#                 return f"Response from websocket: {e['data']}"
 
 
 dash.clientside_callback(update_graph, 
