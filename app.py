@@ -4,10 +4,6 @@ import dash
 import os
 from dash import DiskcacheManager, CeleryManager
 
-
-from func.func_dash.app_content import  button_group
-
-
 # Для background
 if 'REDIS_URL' in os.environ:
     # Use Redis & Celery if REDIS_URL set as an env variable
@@ -20,10 +16,13 @@ else:
     cache = diskcache.Cache("./cache")
     background_callback_manager = DiskcacheManager(cache)
 
+
+from func.func_dash.app_content import  button_group
+
 '''App'''
 
 # Запуск приложения считывания
-os.system('python3 output.py &')
+# os.system('python3 output.py &')
 
 app = DashProxy(name="WT901BLE", external_stylesheets=[dbc.themes.BOOTSTRAP],
                 use_pages=True,
@@ -50,4 +49,7 @@ app.layout = html.Div([
 
 
 if __name__ == "__main__":
-    app.run_server(port=8050, debug=True)
+    app.run_server(port=8050, 
+                #    debug=True, 
+                #    dev_tools_hot_reload=False   # Не проверяет каждые 3 сек: https://question-it.com/questions/13805722/kak-ostanovit-http-zapros-ot-dash_renderer
+                   )
