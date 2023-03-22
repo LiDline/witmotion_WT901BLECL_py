@@ -11,7 +11,7 @@ import json
 
 from func.func_dash.app_content import header_page
 from func.func_dash.drop_menu import drop_menu
-from func.func_dash.inputs import input_address
+from func.func_dash.collapse import collapse
 from func.func_dash.buttons import connection, start
 from func.counter import Counter
 
@@ -48,11 +48,13 @@ layout = html.Div([
             html.Div(id='message_from_server')
         ])
     ], className='other'),
-    dbc.Row([]),
+    dbc.Row([
+        collapse()
+             ], className='other'),
 ])
 # ___________________________________________________________________________________________________
 
-'''Callback'''    
+'''Callback'''
 
 # Обновление поля Selected
 @dash.callback(
@@ -85,7 +87,18 @@ def disabled(value):
 )
 def send_address(bt1, value):
     if value is not None:
-        post = requests.post('http://127.0.0.1:5001/post', json=value).json()
+        post = requests.post(
+            'http://127.0.0.1:5001/chosen_address_input', json=value).json()
         # os.system('python3 output.py &')
         return f'Server response: {post[0]}'
-    
+
+# Открываем настройки
+@dash.callback(
+    Output("collapse", "is_open"),
+    [Input("Settings", "n_clicks")],
+    [State("collapse", "is_open")],
+)
+def toggle_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open

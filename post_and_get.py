@@ -12,14 +12,13 @@ async def ports():
     return available_ports
 
 # Для приёма выбранного адреса
-@app.post("/post")
-async def post():
+@app.post("/chosen_address_input")
+async def chosen_address_output():
     global address
     address = await request.get_json()
     return [f'input "{address}" accepted.']
-
-@app.get("/chosen_address")
-async def chosen_address():
+@app.get("/chosen_address_output")
+async def chosen_address_input():
     return [address]
     
 

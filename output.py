@@ -18,11 +18,10 @@ t_start = time.perf_counter()
 @app.websocket("/ws")
 async def data():
     while True:
-        address = requests.get('http://127.0.0.1:5001/chosen_address').json()[0]
+        address = requests.get('http://127.0.0.1:5001/chosen_address_output').json()[0]
         if address == None:
             time.sleep(1)
         try:
-            
             socket = serial.Serial(address, 115200, timeout=10)
             
             data = socket.read(20)
