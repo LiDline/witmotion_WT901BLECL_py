@@ -14,6 +14,8 @@ def button_group():
     return bg
 
 
-# Заглавнй текст страниц
+# Заглавный текст страниц
 def header_page(name):
+    if name.lower() != 'home':
+        return html.H2(f'This is the page for connecting via {name}')
     return html.H2(f'This is our {name} page')

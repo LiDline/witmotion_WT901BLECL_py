@@ -50,6 +50,6 @@ app.layout = html.Div([
 
 if __name__ == "__main__":
     app.run_server(port=8050, 
-                #    debug=True, 
+                   debug=True, 
                 #    dev_tools_hot_reload=False   # Не проверяет каждые 3 сек: https://question-it.com/questions/13805722/kak-ostanovit-http-zapros-ot-dash_renderer
                    )

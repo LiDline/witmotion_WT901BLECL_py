@@ -3,6 +3,7 @@ import glob
 import serial
 
 
+# Поиск подключённых usb устройств
 def serial_ports():
     """ Lists serial port names
 
@@ -30,7 +31,3 @@ def serial_ports():
         except (OSError, serial.SerialException):
             pass
     return result
-
-
-# if __name__ == '__main__':
-#     print(serial_ports())
