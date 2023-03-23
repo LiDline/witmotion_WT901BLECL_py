@@ -9,3 +9,11 @@ def drop_menu():
     )
     text = dbc.FormText("Choice device address here...")
     return html.Div([dropdown, text])
+
+# Частота считывания
+def rate():
+    dropdown = dcc.Dropdown(
+        options=[0.2, 0.5, 1, 2, 5, 10 , 20, 50], value=10, id='rate', placeholder='Select...', disabled=False
+    )
+    text = dbc.FormText("Choice reading rate [Hz] here...")
+    return html.Div([dropdown, text])

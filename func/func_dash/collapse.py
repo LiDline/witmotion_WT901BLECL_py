@@ -1,17 +1,32 @@
 import dash_bootstrap_components as dbc
 from dash_extensions.enrich import html
+from func.func_dash.buttons import settings, acc_cal, magn_cal, algorithm_transition
+from func.func_dash.drop_menu import rate
 
 
 def collapse():
     res = [
-        dbc.Button(
-            "Sensor settings",
-            id="Settings",
-            className="mb-3",
-            color="primary",
-            n_clicks=0,),
+        settings(),
         dbc.Collapse(
-            dbc.Card(dbc.CardBody("This content is hidden in the collapse")),
+            dbc.Card([
+                dbc.Row([
+                    dbc.Col([
+                        acc_cal()
+                    ]),
+                    dbc.Col([
+                        algorithm_transition()
+                    ]), 
+                ]),
+                dbc.Row([
+                    dbc.Col([
+                        magn_cal()
+                        
+                    ]),
+                    dbc.Col([
+                        rate()
+                    ]), 
+                ])
+            ]),
             id="collapse",
             is_open=False,
         ),
