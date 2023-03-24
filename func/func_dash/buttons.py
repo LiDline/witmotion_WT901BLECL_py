@@ -42,8 +42,8 @@ def algorithm_transition():
         dbc.Button("6-DOF", outline=True, color="primary",
                    id='6_DOF', n_clicks=0, disabled=False),
         dbc.Button("9-DOF", outline=True, color="danger",
-                   id='9_DOF', n_clicks=0, disabled=True),
-    ] )  
+                   id='9_DOF', n_clicks=0, disabled=False),
+    ])  
 
 
 # Кнопка старта
@@ -60,7 +60,7 @@ def start():
 def settings():
     return dbc.Button(
             "Sensor settings",
-            id="Settings",
+            id="button_sensor_settings",
             className="mb-3",
             color="primary",
             n_clicks=0, 

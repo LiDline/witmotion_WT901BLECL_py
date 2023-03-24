@@ -14,14 +14,14 @@ app = Quart(__name__)
 
 
 df = create_table()
-t_start = time.perf_counter()
 
 @app.websocket("/ws")
 async def data():
     address = requests.get('http://127.0.0.1:5001/chosen_address_output').json()[0]
     command = requests.get('http://127.0.0.1:5001/executed_order').json()[0]
     socket = serial.Serial(address, 115200, timeout=10)
-    print(command)
+    t_start = time.perf_counter()
+    
     while command:
         data = socket.read(20)
         a, w, A = decoded_data(data)
@@ -32,7 +32,8 @@ async def data():
         await websocket.send(output)
         
         command = requests.get('http://127.0.0.1:5001/executed_order').json()[0]
-        time.sleep(0.1)
+        # time.sleep(0.1)
+    df.to_csv('res.csv')    
     sys.exit()
     
 

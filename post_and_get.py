@@ -3,6 +3,10 @@ from func.serial_ports import serial_ports
 import serial
 
 
+from func.general_operations import di_commands
+from func.for_usb import usb_calibrate_gyr_and_acc, usb_algorithm_transition, usb_return_rate
+
+
 app = Quart(__name__)
 address = None
 command = None
@@ -17,7 +21,8 @@ async def ports():
 # Для приёма выбранного адреса
 @app.post("/chosen_address_input")
 async def chosen_address_output():
-    global address
+    global address, socket  # По другому не придумал...
+
     address = await request.get_json()
     socket = serial.Serial(address, 115200, timeout=10)
     if socket.open:
@@ -34,12 +39,28 @@ async def chosen_address_input():
 async def start_stop(): 
     global command
     command = await request.get_json()
-    return ['Поехали']
+    if command:
+        return ['Server response: data collection started!']
+    return ['Server response: reading complete, data is saved in the project folder in "res.csv"!']
 
 @app.get("/executed_order")
 async def executed_order():
     return [command]
 
+
+# Settings
+@app.post("/sensor_settings")
+async def sensor_settings():
+    settings = await request.get_json()
+    print(settings)
+    if settings[0] == 'accelerometer_calibration':
+        usb_calibrate_gyr_and_acc(socket)
+    if settings[0] == '6_DOF' or settings[0] == '9_DOF':
+        usb_algorithm_transition(socket, settings[0])    
+    if settings[0] in [0.2, 0.5, 1, 2, 5, 10 , 20, 50]:
+        usb_return_rate(socket, settings[0])   
+        
+    return [f'Server response: command {settings[0]} is complete!']
 
 if __name__ == "__main__":
     app.run(port=5001,

@@ -1,6 +1,5 @@
 import pandas as pd
-from numpy import zeros, vstack, concatenate
-import time
+
 
 """Общие для USB и Bluetooth методы"""
 
@@ -10,57 +9,6 @@ def create_table():
     df = df.reindex(columns=['t, с', 'aX, м/с2', 'aY, м/с2', 'aZ, м/с2', 'wX, °/с', 'wY, °/с', 'wZ, °/с', 'AX, °', 'AY, °', 'AZ, °',])
     return df
 
-# Создание необходимых констант
-def init_table():
-# Создадим массивы для графиков
-    aa = zeros(3)
-    ww = zeros(3)
-    AA = zeros(3)
-
-    df = create_table()    
-
-    print('Идёт снятие данных.', 'Для завершения нажмите Interrupt.')
-
-    counter = 0
-    
-    t_start = time.perf_counter()
-    t = []
-
-    return counter, t_start, t, aa, ww, AA, df
-
-# Обрабока полученных данных для графиков и таблицы результатов
-def data_processing(fig, a, w, A, aa, ww, AA, t, t_start, x_label_size, counter, df):
-    if all([a is not None, w is not None, A is not None]):
-        t.append(time.perf_counter() - t_start)
-        aa = vstack((aa, a))
-        ww = vstack((ww, w))
-        AA = vstack((AA, A))
-        with fig.batch_update():  
-            # Меняем заголовки sub'ов (записываем текущие характеристики)  
-            fig.layout.annotations[0].update(
-                                        text=(f"Линейные ускорения (aX = {'{0: <4}'.format(round(a[0], 1))}, aY = {'{0: <4}'.format(round(a[1], 1))}, aZ = {'{0: <4}'.format(round(a[2], 1))})"))
-            fig.layout.annotations[1].update(
-                                        text=(f"Угловые скорости (wX = {'{0: <4}'.format(round(w[0]))}, wY = {'{0: <4}'.format(round(w[1]))}, wZ = {'{0: <4}'.format(round(w[2]))})"))
-            fig.layout.annotations[2].update(
-                                        text=(f"Углы (AX = {'{0: <5}'.format(round(A[0]))}, AY = {'{0: <5}'.format(round(A[1]))}, AZ = {'{0: <5}'.format(round(A[2]))})"))
-
-            for i in range(3):
-                fig.data[i].y = aa[:,i]
-                fig.data[i].x = t
-                fig.data[i+3].y = ww[:,i]
-                fig.data[i+3].x = t
-                fig.data[i+6].y = AA[:,i]
-                fig.data[i+6].x = t  
-        if len(aa) > x_label_size:  # Ограничение по отображаемым данным
-            t  = t[-x_label_size:]
-            aa = aa[-x_label_size:]
-            ww = ww[-x_label_size:] 
-            AA = AA[-x_label_size:]
-
-        df.loc[counter,:] = concatenate([[round(time.perf_counter() - t_start, 2)], a, w, A]) 
-        counter += 1    
-
-    return t, aa, ww, AA, counter, df
 
 def di_hz(rate):
     # Таблица для команд, изменяющих Гц (стр. 19 - WT901BLECL DataSheet.pdf)
@@ -69,12 +17,14 @@ def di_hz(rate):
                 20: b'\xFF\xAA\x03\x07\x00', 50: b'\xFF\xAA\x03\x08\x00'}
     return di_rate[rate]
 
+
 # Таблица с командами
 def di_commands(key):
-    di = {'calibrate gyr and acc': b'\xFF\xAA\x01\x01\x00', 'calibrate magn' : b'\xFF\xAA\x01\x07\x00',
-        'exit calibration mode': b'\xFF\xAA\x01\x00\x00', '6 algorithm transition': b'\xFF\xAA\x24\x01\x00',
-        '9 algorithm transition': b'\xFF\xAA\x24\x00\x00', 'save configuration': b'\xFF\xAA\x00\x00\x00'}
+    di = {'accelerometer_calibration': b'\xFF\xAA\x01\x01\x00', 'calibrate magn' : b'\xFF\xAA\x01\x07\x00',
+        'exit_calibration_mode': b'\xFF\xAA\x01\x00\x00', '6_DOF': b'\xFF\xAA\x24\x01\x00',
+        '9_DOF': b'\xFF\xAA\x24\x00\x00', 'save_configuration': b'\xFF\xAA\x00\x00\x00'}
     return di[key]
+
 
 # Обработка поступающего сигнала
 def decoded_data(data): 

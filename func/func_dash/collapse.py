@@ -27,7 +27,7 @@ def collapse():
                     ]), 
                 ])
             ]),
-            id="collapse",
+            id="collapse_sensor_settings",
             is_open=False,
         ),
     ]
