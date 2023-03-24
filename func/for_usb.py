@@ -10,16 +10,6 @@ def usb_calibrate_gyr_and_acc(socket):
     socket.write(di_commands('exit_calibration_mode'))  
 
 
-# # Калибровка магнитрометра для USB
-# def usb_calibrate_magn(socket):
-#     socket.write(di_commands('calibrate magn'))
-#     print('Для калибровки магнитрометра необходимо провернуть датчик по КАЖДОЙ оси (начинать с OZ) на 360 град по 3 раза.')
-#     while input('Для продолжения введите "y"') != 'y':
-#         pass
-#     socket.write(di_commands('exit calibration mode'))
-#     print("Калибровка магнитрометра завершена.\n")
-
-
 # Переключение Algorithm Transition для USB
 def usb_algorithm_transition(socket, axis):
     socket.write(di_commands(axis))  

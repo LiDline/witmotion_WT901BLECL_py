@@ -52,14 +52,19 @@ async def executed_order():
 @app.post("/sensor_settings")
 async def sensor_settings():
     settings = await request.get_json()
-    print(settings)
+
     if settings[0] == 'accelerometer_calibration':
         usb_calibrate_gyr_and_acc(socket)
-    if settings[0] == '6_DOF' or settings[0] == '9_DOF':
+    elif settings[0] == '6_DOF' or settings[0] == '9_DOF':
         usb_algorithm_transition(socket, settings[0])    
-    if settings[0] in [0.2, 0.5, 1, 2, 5, 10 , 20, 50]:
+    elif settings[0] in [0.2, 0.5, 1, 2, 5, 10 , 20, 50]:
         usb_return_rate(socket, settings[0])   
-        
+    elif settings[0] == 'magnetometer_calibration':
+        socket.write(di_commands('magnetometer_calibration'))
+        print(1)
+        next_step = await request.get_json()
+    socket.write(di_commands('exit_calibration_mode'))
+    print(2)
     return [f'Server response: command {settings[0]} is complete!']
 
 if __name__ == "__main__":

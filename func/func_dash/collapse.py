@@ -1,7 +1,8 @@
 import dash_bootstrap_components as dbc
 from dash_extensions.enrich import html
-from func.func_dash.buttons import settings, acc_cal, magn_cal, algorithm_transition
+from func.func_dash.buttons import settings, acc_cal, algorithm_transition
 from func.func_dash.drop_menu import rate
+from func.func_dash.modal import modal
 
 
 def collapse():
@@ -19,7 +20,7 @@ def collapse():
                 ]),
                 dbc.Row([
                     dbc.Col([
-                        magn_cal()
+                        modal()
                         
                     ]),
                     dbc.Col([

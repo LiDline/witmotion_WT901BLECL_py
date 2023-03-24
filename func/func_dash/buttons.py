@@ -24,18 +24,6 @@ def acc_cal():
             disabled=False)
 
 
-# Кнопка калибровки магн
-def magn_cal():
-    return dbc.Button(
-            "Magnetometer calibration",
-            id="magnetometer_calibration",
-            className="mb-3",
-            color="primary",
-            n_clicks=0, 
-            outline=True,
-            disabled=False)
-
-
 # Количество степеней
 def algorithm_transition():
     return  dbc.ButtonGroup([

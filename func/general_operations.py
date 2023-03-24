@@ -20,7 +20,7 @@ def di_hz(rate):
 
 # Таблица с командами
 def di_commands(key):
-    di = {'accelerometer_calibration': b'\xFF\xAA\x01\x01\x00', 'calibrate magn' : b'\xFF\xAA\x01\x07\x00',
+    di = {'accelerometer_calibration': b'\xFF\xAA\x01\x01\x00', 'magnetometer_calibration' : b'\xFF\xAA\x01\x07\x00',
         'exit_calibration_mode': b'\xFF\xAA\x01\x00\x00', '6_DOF': b'\xFF\xAA\x24\x01\x00',
         '9_DOF': b'\xFF\xAA\x24\x00\x00', 'save_configuration': b'\xFF\xAA\x00\x00\x00'}
     return di[key]

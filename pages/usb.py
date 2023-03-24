@@ -1,19 +1,16 @@
 from dash_extensions import WebSocket
 from dash_extensions.enrich import html, Input, Output, State, dcc
 import dash_bootstrap_components as dbc
-from dash.exceptions import PreventUpdate
 import dash
 import re
 import os
 import requests
-import time
 
 
 from func.func_dash.app_content import header_page
 from func.func_dash.drop_menu import drop_menu
 from func.func_dash.collapse import collapse
 from func.func_dash.buttons import connection, start
-from func.counter import Counter
 
 
 dash.register_page(__name__)
@@ -168,9 +165,8 @@ def toggle_collapse(bt1, bt2, bt3, value):
 
 # Функционал Sensor settings
 @dash.callback(
-    Output('message_from_post_server', 'children'),
+    Output('message_from_post_server', 'children', allow_duplicate=True),
     Input('accelerometer_calibration', 'n_clicks'),
-    Input('magnetometer_calibration', 'n_clicks'),
     Input('6_DOF', 'n_clicks'),
     Input('9_DOF', 'n_clicks'),
     Input('rate', 'value'),
@@ -189,16 +185,39 @@ def toggle_collapse(bt1, bt2, bt3, value):
         (Output("rate", "disabled"), True, False),
     ],
 )
-def sensor_settings(bt_acc, btn_magn, btn_six, btn_nine, rate):
+def sensor_settings(btn_acc, btn_six, btn_nine, rate):
     button_id = dash.ctx.triggered_id
+
     if button_id == 'rate':
         post = requests.post(
                 'http://127.0.0.1:5001/sensor_settings', json=[rate]).json()
         return html.Div(post[0])
         
     post = requests.post(
-                'http://127.0.0.1:5001/sensor_settings', json=[button_id]).json()    
+                'http://127.0.0.1:5001/sensor_settings', json=[button_id]).json()   
+     
     return html.Div(post[0])
+
+
+# Кнопка Magnetometer calibration
+@dash.callback(
+    Output("modal", "is_open"),
+    Output('message_from_post_server', 'children'),
+    Input("magnetometer_calibration", "n_clicks"), 
+    Input("button_close", "n_clicks"),
+    prevent_initial_call=True,
+)
+def toggle_modal(n1, n2):
+    button_id = dash.ctx.triggered_id
+    
+    if button_id == 'magnetometer_calibration':
+        post = requests.post(
+                'http://127.0.0.1:5001/sensor_settings', json=[button_id]).json()
+        return [True, dash.no_update]
+    post = requests.post(
+                'http://127.0.0.1:5001/sensor_settings', json=['magnetometer_calibration']).json()
+    return [False, html.Div(post[0])]
+
 
 # Приём данных с webSocket для графика
 dash.clientside_callback(update_graph,
