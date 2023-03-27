@@ -78,7 +78,7 @@ layout = html.Div([
 def disabled(bt1):
     os.system('python3 output.py &')
     time.sleep(1)
-    try:
+    try:    # Иначе ругается на requests (при нажатии на Stop прога идёт сюда)
         ports = requests.get('http://127.0.0.1:5000/available_ports').json()
         return [False, ports]
     except:
@@ -166,7 +166,7 @@ def toggle_collapse(bt1, bt2, bt3, value):
             return [True, False, True, False, websocket, graph, post[0], dash.no_update, True]
         # Остановка считывания и выключение сервера считывания 
         elif button_id == 'button_stop':
-            try:
+            try:    # Иначе ругается на requests
                 post = requests.post(
                     'http://127.0.0.1:5000/start_stop', json=False).json()
             except:
@@ -178,7 +178,7 @@ def toggle_collapse(bt1, bt2, bt3, value):
     # Перестраховка    
     post = requests.post(
                 'http://127.0.0.1:5000/start_stop', json=False).json()
-    return [True, True, True, False, html.Div(), html.Div(), dash.no_update, dash.no_update, dash.no_update,] 
+    return [True, True, True, False, html.Div(), html.Div(), dash.no_update, dash.no_update, dash.no_update] 
 
 
 # Функционал Sensor settings
