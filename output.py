@@ -3,7 +3,6 @@ from quart import websocket, Quart, request
 import serial
 import time
 from numpy import concatenate
-import requests
 import sys
 import serial
 

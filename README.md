@@ -4,7 +4,7 @@
 2. draft - реализация на python (реализовано всё для bluetooth и usb);
 3. react - реализация на react (на данный момент ничего не реализовано).
 
-## 1 Состав проекта на dash
+## 1 Состав ветки на dash
 ...
 
 ## 2 Запуск программы
@@ -19,6 +19,13 @@
 - datetime;
 - numpy;
 - dash;
+- requests;
+- os;
+- re;
+- time;
+- sys;
+- json;
+- sys;
 - dash_extensions;
 - dash_bootstrap_components;
 - pandas.
