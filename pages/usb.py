@@ -5,6 +5,7 @@ import dash
 import re
 import os
 import requests
+import time
 
 
 from func.func_dash.app_content import header_page
@@ -46,10 +47,12 @@ layout = html.Div([
         ])
     ], className='other'),
     dbc.Row([
+        # Sensor settings
         dbc.Col([
             collapse()
         ], width={"size": 5}),
     ], className='other'),
+        
     dbc.Row([
         dbc.Col([
             start()
@@ -66,14 +69,20 @@ layout = html.Div([
 
 # Обновление поля Selected
 @dash.callback(
-    Output('dropdown', 'disabled'),
+    Output('dropdown', 'disabled', allow_duplicate=True),
     Output('dropdown', 'options'),
     Input('button_search', 'n_clicks'),
     prevent_initial_call=True,
+    background=True,
 )
 def disabled(bt1):
-    ports = requests.get('http://127.0.0.1:5001/available_ports').json()
-    return [False, ports]
+    os.system('python3 output.py &')
+    time.sleep(1)
+    try:
+        ports = requests.get('http://127.0.0.1:5000/available_ports').json()
+        return [False, ports]
+    except:
+        return [True, dash.no_update]
 
 # Активация|деактивация кнопки Connection
 @dash.callback(
@@ -97,7 +106,7 @@ def disabled(value):
 def send_address(bt1, value):
     if value is not None:
         post = requests.post(
-            'http://127.0.0.1:5001/chosen_address_input', json=value).json()
+            'http://127.0.0.1:5000/chosen_address_input', json=value).json()
         return [f'Server response: {post[0]}', False]
 
 # Открываем Settings
@@ -122,6 +131,8 @@ def toggle_collapse(n, is_open):
     Output("websocket_html", "children"),
     Output("graph_row", "children"),
     Output('message_from_post_server', 'children', allow_duplicate=True),
+    Output('dropdown', 'value'),
+    Output('dropdown', 'disabled', allow_duplicate=True),
     Input("button_start", "n_clicks"),
     Input("button_stop", "n_clicks"),
     Input('button_connection', "n_clicks"),
@@ -134,7 +145,7 @@ def toggle_collapse(bt1, bt2, bt3, value):
     if value != None:
         # Старт сервера считывания; активация кнопки Start
         if button_id == 'button_connection':
-            os.system('python3 output.py &')
+            # os.system('python3 output.py &')
             return [
                 False, # disabled button_start
                 dash.no_update, # disabled button_stop
@@ -143,24 +154,31 @@ def toggle_collapse(bt1, bt2, bt3, value):
                 dash.no_update, # create websocket_html
                 dash.no_update,  # create graph_row
                 dash.no_update, # message from server
+                dash.no_update, # dropdown usb value
+                dash.no_update, # dropdown usb disabled
                 ] 
         # Запуск считывания
         elif button_id == 'button_start':
-            graph = html.Div(dcc.Graph(id='graph'))
             websocket = WebSocket(id="ws", url="ws://127.0.0.1:5000/ws")
+            graph = html.Div(dcc.Graph(id='graph'))
             post = requests.post(
-                'http://127.0.0.1:5001/start_stop', json=True).json()
-            return [True, False, True, False, websocket, graph, post[0]]
+                'http://127.0.0.1:5000/start_stop', json=True).json()
+            return [True, False, True, False, websocket, graph, post[0], dash.no_update, True]
         # Остановка считывания и выключение сервера считывания 
         elif button_id == 'button_stop':
-            post = requests.post(
-                'http://127.0.0.1:5001/start_stop', json=False).json()
-            return [True, True, True, False, html.Div(), html.Div(), post[0]]
+            try:
+                post = requests.post(
+                    'http://127.0.0.1:5000/start_stop', json=False).json()
+            except:
+                pass
+            return [True, True, True, False, html.Div(), html.Div(), 
+                    'Server response: reading complete, data is saved in the project folder in "res.csv"!', 
+                    None, True]
         
     # Перестраховка    
     post = requests.post(
-                'http://127.0.0.1:5001/start_stop', json=False).json()
-    return [True, True, True, False, html.Div(), html.Div(), dash.no_update] 
+                'http://127.0.0.1:5000/start_stop', json=False).json()
+    return [True, True, True, False, html.Div(), html.Div(), dash.no_update, dash.no_update, dash.no_update,] 
 
 
 # Функционал Sensor settings
@@ -190,11 +208,11 @@ def sensor_settings(btn_acc, btn_six, btn_nine, rate):
 
     if button_id == 'rate':
         post = requests.post(
-                'http://127.0.0.1:5001/sensor_settings', json=[rate]).json()
+                'http://127.0.0.1:5000/sensor_settings', json=[rate]).json()
         return html.Div(post[0])
         
     post = requests.post(
-                'http://127.0.0.1:5001/sensor_settings', json=[button_id]).json()   
+                'http://127.0.0.1:5000/sensor_settings', json=[button_id]).json()   
      
     return html.Div(post[0])
 
@@ -212,10 +230,10 @@ def toggle_modal(n1, n2):
     
     if button_id == 'magnetometer_calibration':
         post = requests.post(
-                'http://127.0.0.1:5001/sensor_settings', json=[button_id]).json()
+                'http://127.0.0.1:5000/sensor_settings', json=[button_id]).json()
         return [True, dash.no_update]
     post = requests.post(
-                'http://127.0.0.1:5001/sensor_settings', json=['magnetometer_calibration']).json()
+                'http://127.0.0.1:5000/sensor_settings', json=['magnetometer_calibration']).json()
     return [False, html.Div(post[0])]
 
 

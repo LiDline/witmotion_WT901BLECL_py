@@ -1,8 +1,8 @@
 from quart import Quart, request
-from func.serial_ports import serial_ports
 import serial
 
 
+from func.serial_ports import serial_ports
 from func.general_operations import di_commands
 from func.for_usb import usb_calibrate_gyr_and_acc, usb_algorithm_transition, usb_return_rate
 

@@ -44,8 +44,8 @@ def start():
     ], size="lg", )
      
 
-# Settings
-def settings():
+# Sensor settings
+def button_sensor_settings():
     return dbc.Button(
             "Sensor settings",
             id="button_sensor_settings",
