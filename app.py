@@ -17,7 +17,7 @@ else:
     background_callback_manager = DiskcacheManager(cache)
 
 
-from func.func_dash.app_content import  button_group
+from func.components.app_content import  button_group
 
 '''App'''
 

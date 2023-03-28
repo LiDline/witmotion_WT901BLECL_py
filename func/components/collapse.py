@@ -1,8 +1,8 @@
 import dash_bootstrap_components as dbc
 from dash_extensions.enrich import html
-from func.func_dash.buttons import button_sensor_settings, acc_cal, algorithm_transition
-from func.func_dash.drop_menu import rate
-from func.func_dash.modal import modal
+from func.components.buttons import button_sensor_settings, acc_cal, algorithm_transition
+from func.components.drop_menu import rate
+from func.components.modal import modal
 
 
 def collapse():
