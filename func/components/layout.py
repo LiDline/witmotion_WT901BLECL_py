@@ -1,6 +1,7 @@
 import re
 import dash_bootstrap_components as dbc
-from dash_extensions.enrich import html, Input, Output, State
+from dash_extensions.enrich import html
+from func.components.collapse import collapse
 
 
 from func.components.app_content import header_page
@@ -34,8 +35,8 @@ def layout(name):
     dbc.Row([
         # Sensor settings
         dbc.Col([
-            html.Div(id='html_sensor_settings')
-        ], width={"size": 5}),
+            collapse()
+        ], width={"size": 4}),
     ], className='other'),
         
     dbc.Row([

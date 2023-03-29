@@ -39,7 +39,7 @@ def start():
     return dbc.ButtonGroup([
         dbc.Button("Start", outline=True, color="primary",
                    id='button_start', n_clicks=0, disabled=False),
-        dbc.Button("Stop", outline=True, color="danger",
+        dbc.Button("Stop & Save", outline=True, color="danger",
                    id='button_stop', n_clicks=0, disabled=False),
     ], size="lg", )
      
@@ -52,4 +52,4 @@ def button_sensor_settings():
             className="mb-3",
             color="primary",
             n_clicks=0, 
-            disabled=False)
+            disabled=True)

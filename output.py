@@ -3,20 +3,28 @@ from quart import websocket, Quart, request
 import serial
 import time
 from numpy import concatenate
-import sys
 import serial
 
 
 from func.general_operations import di_commands
 from func.for_usb import usb_calibrate_gyr_and_acc, usb_algorithm_transition, usb_return_rate
-from func.serial_ports import serial_ports
+from func.for_usb import serial_ports
 from func.general_operations import create_table, decoded_data
 
 
 app = Quart(__name__)
+
 address = None
 command = None
+sensor = None
 
+
+# Usb/Bluetooth
+@app.post("/sensor_selection")
+async def sensor_selection():
+    global sensor
+    sensor = await request.get_json()
+    return [f'The selected sensor is {sensor}']
 
 # Для отправки доступных адресов
 @app.get("/available_ports")
@@ -69,12 +77,12 @@ async def sensor_settings():
         
         """Не сделано"""
         
-    elif settings[0] == 'magnetometer_calibration':
-        socket.write(di_commands('magnetometer_calibration'))
-        print(1)
-        next_step = await request.get_json()
-    socket.write(di_commands('exit_calibration_mode'))
-    print(2)
+    # elif settings[0] == 'magnetometer_calibration':
+    #     socket.write(di_commands('magnetometer_calibration'))
+    #     print(1)
+    #     next_step = await request.get_json()
+    # socket.write(di_commands('exit_calibration_mode'))
+    # print(2)
     
     return [f'Server response: command {settings[0]} is complete!']
 
