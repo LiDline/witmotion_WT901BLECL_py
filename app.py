@@ -4,6 +4,10 @@ import dash
 import os
 from dash import DiskcacheManager, CeleryManager
 
+
+from func.components.callbacks import buttons_main_callback
+
+
 # Для background
 if 'REDIS_URL' in os.environ:
     # Use Redis & Celery if REDIS_URL set as an env variable
@@ -17,12 +21,9 @@ else:
     background_callback_manager = DiskcacheManager(cache)
 
 
-from func.components.app_content import  button_group
+from func.components.app_content import  button_page
 
 '''App'''
-
-# Запуск приложения считывания
-# os.system('python3 output.py &')
 
 app = DashProxy(name="WT901BLE", external_stylesheets=[dbc.themes.BOOTSTRAP],
                 use_pages=True,
@@ -39,7 +40,7 @@ app.layout = html.Div([
             dbc.Col(html.H1('WT901BLE'))
             ], className='app-header'),
     # Nav
-    dbc.Row([button_group()
+    dbc.Row([button_page()
             ], className='app-button'),
     dbc.Row([], className='app-hor-line'),
     # Pages
@@ -47,6 +48,11 @@ app.layout = html.Div([
             ], className='app-pages')
     ])
 
+'''callback'''
+
+# Гасим невыбранные кнопки
+buttons_main_callback(dash)
+    
 
 if __name__ == "__main__":
     app.run_server(port=8050, 

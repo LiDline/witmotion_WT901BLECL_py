@@ -101,7 +101,7 @@ async def data():
         print(command)
         # command = requests.get('http://127.0.0.1:5000/executed_order').json()[0]
     df.to_csv('res.csv')    
-    sys.exit()
+    # sys.exit() # Заменить на post!
     
 
 if __name__ == "__main__":

@@ -44,3 +44,10 @@ def activations_settings_start_stop(button_id, value):
     if value != None and button_id == 'button_connection':
         return [collapse(), start()]
     return [html.Div(), html.Div()]
+
+
+# 5. Открытие кнопки Settings
+def settings_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open

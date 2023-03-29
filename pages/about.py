@@ -13,6 +13,6 @@ layout = html.Div([
     header_page(re.sub(r'\w+\.', '', __name__)),
 
     html.Div(children='''
-        This is our Home page content.
+        This is about page content.
     ''')
 ])

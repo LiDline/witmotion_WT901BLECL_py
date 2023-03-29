@@ -4,10 +4,10 @@ import dash
 
 
 # Переключение страниц
-def button_group():
+def button_page():
     bg = dbc.ButtonGroup(
     [
-        dbc.Button(f"{page['name']}", outline=True, color="primary", href=page["relative_path"]) 
+        dbc.Button(f"{page['name']}", outline=True, color="primary", href=page["relative_path"], id=f'{page["relative_path"]}') 
         for page in dash.page_registry.values()
     ]
 )
