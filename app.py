@@ -3,6 +3,7 @@ import dash_bootstrap_components as dbc
 import dash
 import os
 from dash import DiskcacheManager, CeleryManager
+from dash_extensions.enrich import html, Input, Output
 
 
 from func.components.callbacks import buttons_main_callback
@@ -45,14 +46,16 @@ app.layout = html.Div([
     dbc.Row([], className='app-hor-line'),
     # Pages
     dbc.Row([dash.page_container
-            ], className='app-pages')
+            ], className='app-pages'),
+    # For the current link 
+    dbc.Row([dash.dcc.Location(id='url')])
     ])
+    
 
 '''callback'''
 
 # Гасим невыбранные кнопки
-buttons_main_callback(dash)
-    
+buttons_main_callback(dash) 
 
 if __name__ == "__main__":
     app.run_server(port=8050, 

@@ -69,19 +69,16 @@ def buttons_main_callback(dash):
     
     @dash.callback(
         [Output(f'{page["relative_path"]}', 'disabled') for page in dash.page_registry.values()],
-        [Input(f'{page["relative_path"]}', 'n_clicks') for page in dash.page_registry.values()],
+        Input('url', 'pathname'),
         prevent_initial_call=True,
     )
-    def disabled(*bt):
-        # if all(v is None for v in list(bt)):
-        #     return [True, False, False]
-        
-        button_id = dash.ctx.triggered_id   # Узнаём, что за кнопка
+    def disabled(path):
+        # Находим кнопку, id которой совпадает с page и по индексу в списке гасим
+        url = path
         command = [False for page in dash.page_registry.values()]
-        index = pages.index(button_id)
+        index = pages.index(url)
 
         # Меняем её disable на False
         del command[index]
         command.insert(index, True)
-
         return command
