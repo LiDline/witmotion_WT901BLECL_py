@@ -13,7 +13,7 @@ def drop_menu():
 # Частота считывания
 def rate():
     dropdown = dcc.Dropdown(
-        options=[0.2, 0.5, 1, 2, 5, 10 , 20, 50], value=10, id='rate', placeholder='Select...', disabled=False
+        options=[0.2, 0.5, 1, 2, 5, 10 , 20, 50], value=None, id='rate', placeholder='default = 10 [Hz]', disabled=False
     )
     text = dbc.FormText("Choice reading rate [Hz] here...")
     return html.Div([dropdown, text])

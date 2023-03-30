@@ -18,6 +18,7 @@ app = Quart(__name__)
 address = None
 command = None
 sensor = None
+rate = 10 # default
 
 
 # Usb/Bluetooth
@@ -70,12 +71,15 @@ async def executed_order():
 @app.post("/sensor_settings")
 async def sensor_settings():
     settings = await request.get_json()
-
+    
+    
     if settings[0] == 'accelerometer_calibration':
         usb_calibrate_gyr_and_acc(socket)
     elif settings[0] == '6_DOF' or settings[0] == '9_DOF':
         usb_algorithm_transition(socket, settings[0])    
     elif settings[0] in [0.2, 0.5, 1, 2, 5, 10 , 20, 50]:
+        global rate
+        rate = settings[0]
         usb_return_rate(socket, settings[0])   
         
         """Не сделано"""
@@ -98,7 +102,7 @@ df = create_table()
 async def data():
     # address = requests.get('http://127.0.0.1:5000/chosen_address_output').json()[0]
     # command = requests.get('http://127.0.0.1:5000/executed_order').json()[0]
-    socket = serial.Serial(address, 115200, timeout=10)
+    socket = serial.Serial(address, 115200, timeout=rate)
     t_start = time.perf_counter()
     
     while command:
