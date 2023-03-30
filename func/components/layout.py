@@ -35,7 +35,7 @@ def layout(name):
     dbc.Row([
         # Sensor settings
         dbc.Col([
-            html.Div(id='html_sensor_settings')
+            html.Div(collapse_settings())
         ], width={"size": 4}),
     ], className='other'),
         

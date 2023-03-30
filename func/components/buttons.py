@@ -31,12 +31,8 @@ def algorithm_transition():
 
 # Кнопка старта
 def start():
-    return dbc.ButtonGroup([
-        dbc.Button("Start", outline=True, color="primary",
-                   id='button_start', n_clicks=0, disabled=False),
-        dbc.Button("Stop & Save", outline=True, color="danger",
-                   id='button_stop', n_clicks=0, disabled=False),
-    ], size="lg", )
+    return dbc.Button("Start", outline=False, color="primary", size="lg",
+                   id='button_start', n_clicks=0, disabled=False)
      
 
 # Sensor settings
@@ -44,7 +40,7 @@ def button_sensor_settings():
     return dbc.Button(
             "Sensor settings",
             id="button_sensor_settings",
-            color="primary",
+            color="success",
             n_clicks=0, 
             outline=True,
             disabled=True)

@@ -37,8 +37,10 @@ async def ports():
 @app.post("/chosen_address_input")
 async def chosen_address_output():
     global address, socket  # По другому не придумал...
-
+    
     address = await request.get_json()
+    if address == None:
+        return ['please select sensor address']
     socket = serial.Serial(address, 115200, timeout=10)
     if socket.open:
         return [f'input "{address}" is available.']
@@ -67,6 +69,7 @@ async def executed_order():
 @app.post("/sensor_settings")
 async def sensor_settings():
     settings = await request.get_json()
+    print(settings)
 
     if settings[0] == 'accelerometer_calibration':
         usb_calibrate_gyr_and_acc(socket)
@@ -93,8 +96,6 @@ df = create_table()
 # Создаём вебсокеты
 @app.websocket("/ws")
 async def data():
-    # address = requests.get('http://127.0.0.1:5000/chosen_address_output').json()[0]
-    # command = requests.get('http://127.0.0.1:5000/executed_order').json()[0]
     socket = serial.Serial(address, 115200, timeout=10)
     t_start = time.perf_counter()
     
@@ -107,7 +108,6 @@ async def data():
             ])
         await websocket.send(output)
         print(command)
-        # command = requests.get('http://127.0.0.1:5000/executed_order').json()[0]
     df.to_csv('res.csv')    
     # sys.exit() # Заменить на post!
     

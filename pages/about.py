@@ -1,7 +1,6 @@
 import dash
 from dash import html
 import re
-from dash_extensions import WebSocket
 
 
 from func.components.app_content import header_page

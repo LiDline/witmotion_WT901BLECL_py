@@ -1,14 +1,11 @@
 import dash_bootstrap_components as dbc
-from dash_extensions.enrich import html
-from func.components.buttons import button_sensor_settings, acc_cal, algorithm_transition
+from func.components.buttons import acc_cal, algorithm_transition
 from func.components.drop_menu import rate
 from func.components.modal import modal
 
 
 def collapse_settings():
-    res = [
-        # button_sensor_settings(),
-        dbc.Collapse(
+    return  dbc.Collapse(
             dbc.Card([
                 dbc.Row([
                     dbc.Col([
@@ -30,6 +27,4 @@ def collapse_settings():
             ]),
             id="collapse_sensor_settings",
             is_open=False,
-        ),
-    ]
-    return html.Div(res)
+        )
