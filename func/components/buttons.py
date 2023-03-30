@@ -1,15 +1,10 @@
 import dash_bootstrap_components as dbc
 
 
-# Кнопка подключение
-def connection():
-    button_group = dbc.ButtonGroup([
-        dbc.Button("Search devices", outline=True, color="primary",
-                   id='button_search', n_clicks=0, disabled=False),
-        dbc.Button("Device connection", outline=True, color="primary",
-                   id='button_connection', n_clicks=0, disabled=True)
-    ])
-    return button_group
+# Кнопка поиска
+def button_search():
+    return  dbc.Button("Search devices", outline=True, color="primary",
+                   id='button_search', n_clicks=0, disabled=False)
 
 
 # Кнопка калибровки акс
@@ -49,7 +44,7 @@ def button_sensor_settings():
     return dbc.Button(
             "Sensor settings",
             id="button_sensor_settings",
-            className="mb-3",
             color="primary",
             n_clicks=0, 
+            outline=True,
             disabled=True)

@@ -1,12 +1,12 @@
 import re
 import dash_bootstrap_components as dbc
 from dash_extensions.enrich import html
-from func.components.collapse import collapse
 
 
 from func.components.app_content import header_page
 from func.components.drop_menu import drop_menu
-from func.components.buttons import connection
+from func.components.buttons import button_search, button_sensor_settings
+from func.components.collapse import collapse_settings
 
 
 # Layout 
@@ -26,7 +26,7 @@ def layout(name):
             drop_menu()
         ], width={"size": 2}),
         dbc.Col([
-            connection()
+            dbc.ButtonGroup([button_search(), button_sensor_settings()])
         ]),
         dbc.Col([
             html.Div(id='message_from_post_server')
@@ -35,7 +35,7 @@ def layout(name):
     dbc.Row([
         # Sensor settings
         dbc.Col([
-            collapse()
+            html.Div(id='html_sensor_settings')
         ], width={"size": 4}),
     ], className='other'),
         

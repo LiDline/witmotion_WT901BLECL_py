@@ -5,9 +5,9 @@ from func.components.drop_menu import rate
 from func.components.modal import modal
 
 
-def collapse():
+def collapse_settings():
     res = [
-        button_sensor_settings(),
+        # button_sensor_settings(),
         dbc.Collapse(
             dbc.Card([
                 dbc.Row([
