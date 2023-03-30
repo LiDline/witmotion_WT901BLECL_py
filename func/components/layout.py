@@ -5,7 +5,7 @@ from dash_extensions.enrich import html
 
 from func.components.app_content import header_page
 from func.components.drop_menu import drop_menu
-from func.components.buttons import button_search, button_sensor_settings
+from func.components.buttons import button_search, button_sensor_settings, start
 from func.components.collapse import collapse_settings
 
 
@@ -38,10 +38,10 @@ def layout(name):
             html.Div(collapse_settings())
         ], width={"size": 4}),
     ], className='other'),
-        
+    # Button stop/start    
     dbc.Row([
         dbc.Col([
-            html.Div(id='html_buttons_start_and_stop')
+            start()
             ]),
     ], className='other'),
     # Graph

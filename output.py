@@ -4,6 +4,7 @@ import serial
 import time
 from numpy import concatenate
 import serial
+import sys
 
 
 from func.general_operations import di_commands
@@ -69,7 +70,6 @@ async def executed_order():
 @app.post("/sensor_settings")
 async def sensor_settings():
     settings = await request.get_json()
-    print(settings)
 
     if settings[0] == 'accelerometer_calibration':
         usb_calibrate_gyr_and_acc(socket)
@@ -96,6 +96,8 @@ df = create_table()
 # Создаём вебсокеты
 @app.websocket("/ws")
 async def data():
+    # address = requests.get('http://127.0.0.1:5000/chosen_address_output').json()[0]
+    # command = requests.get('http://127.0.0.1:5000/executed_order').json()[0]
     socket = serial.Serial(address, 115200, timeout=10)
     t_start = time.perf_counter()
     
@@ -106,10 +108,10 @@ async def data():
         output = json.dumps([
             (df[df.columns[i]].tail(50)).to_list() for i in range(len(df.axes[1]))
             ])
-        await websocket.send(output)
-        print(command)
+        await websocket.send(output)      
+        # command = requests.get('http://127.0.0.1:5000/executed_order').json()[0]
     df.to_csv('res.csv')    
-    # sys.exit() # Заменить на post!
+    sys.exit() # Заменить на post!
     
 
 if __name__ == "__main__":

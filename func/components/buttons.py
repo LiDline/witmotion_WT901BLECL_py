@@ -31,8 +31,8 @@ def algorithm_transition():
 
 # Кнопка старта
 def start():
-    return dbc.Button("Start", outline=False, color="primary", size="lg",
-                   id='button_start', n_clicks=0, disabled=False)
+    return dbc.Button("Start", outline=True, color="primary", size="lg",
+                   id='button_start', n_clicks=0, disabled=True)
      
 
 # Sensor settings
