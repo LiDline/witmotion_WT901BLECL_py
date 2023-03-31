@@ -10,6 +10,7 @@ import sys
 from func.general_operations import di_commands
 from func.for_usb import usb_calibrate_gyr_and_acc, usb_algorithm_transition, usb_return_rate
 from func.for_usb import serial_ports
+from func.for_bluetooth import device_search
 from func.general_operations import create_table, decoded_data
 
 
@@ -28,11 +29,13 @@ async def sensor_selection():
     sensor = await request.get_json()
     return [f'The selected sensor is {sensor}']
 
+
 # Для отправки доступных адресов
 @app.get("/available_ports")
 async def ports():
-    available_ports = serial_ports()
-    return available_ports
+    if sensor == '/usb':
+        return serial_ports()
+    return device_search()
 
 
 # Для приёма выбранного адреса

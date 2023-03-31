@@ -5,8 +5,7 @@ import time
 import os
 
 
-from func.components.buttons import start
-from func.check_running_output import is_running
+from func.for_usb import is_running
 
 
 def callback(dash):   
@@ -227,6 +226,6 @@ def buttons_main_callback(dash):
         command.insert(index, True)
         
         post = requests.post(
-            'http://127.0.0.1:5000/sensor_selection', json=path).json() # Отправим usb/bluetooth
+            'http://127.0.0.1:5000/sensor_selection', json=path).json() # Отправим через что считываем (usb/bluetooth)
 
         return command
