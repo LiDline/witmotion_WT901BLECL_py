@@ -20,6 +20,8 @@ def modal():
             ],
             id="modal",
             is_open=False,
+            keyboard=False,
+            backdrop="static",
         ),
     ]
 )

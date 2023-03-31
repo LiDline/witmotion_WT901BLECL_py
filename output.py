@@ -72,7 +72,6 @@ async def executed_order():
 async def sensor_settings():
     settings = await request.get_json()
     
-    
     if settings[0] == 'accelerometer_calibration':
         usb_calibrate_gyr_and_acc(socket)
     elif settings[0] == '6_DOF' or settings[0] == '9_DOF':
@@ -80,18 +79,16 @@ async def sensor_settings():
     elif settings[0] in [0.2, 0.5, 1, 2, 5, 10 , 20, 50]:
         global rate
         rate = settings[0]
-        usb_return_rate(socket, settings[0])   
-        
-        """Не сделано"""
-        
-    # elif settings[0] == 'magnetometer_calibration':
-    #     socket.write(di_commands('magnetometer_calibration'))
-    #     print(1)
-    #     next_step = await request.get_json()
-    # socket.write(di_commands('exit_calibration_mode'))
-    # print(2)
-    
-    return [f'Server response: command {settings[0]} is complete!']
+        usb_return_rate(socket, settings[0])     
+    elif settings[0] == 'magnetometer_calibration':
+        socket.write(di_commands('magnetometer_calibration'))
+    return [f'Server response: command {settings[0]} is complete!'] 
+
+@app.post("/magnetometer_calibration_end")
+async def magnetometer_calibration_end():
+    end_step = await request.get_json()
+    socket.write(di_commands('exit_calibration_mode'))
+    return [f'Server response: command magnetometer_calibration is end!']
 
 
 df = create_table()

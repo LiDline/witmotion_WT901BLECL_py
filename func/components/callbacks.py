@@ -79,7 +79,7 @@ def callback(dash):
             return is_open
     
     
-    # 5. Работа кнопок в Settings
+    # 5. Работа кнопок в Settings (кроме Magnetometer calibration)
     @dash.callback(
         Output('message_from_post_server', 'children', allow_duplicate=True),
         Input('accelerometer_calibration', 'n_clicks'),
@@ -114,7 +114,26 @@ def callback(dash):
         return html.Div(post[0])
     
     
-    # 6. Замена кнопки Start на Stop
+    # 6. Кнопка Magnetometer calibration
+    @dash.callback(
+        Output("modal", "is_open"),
+        Output('message_from_post_server', 'children'),
+        Input("magnetometer_calibration", "n_clicks"), 
+        Input("button_close", "n_clicks"),
+        prevent_initial_call=True,
+    )
+    def toggle_modal(n1, n2):
+        button_id = dash.ctx.triggered_id
+
+        if button_id == 'magnetometer_calibration':
+            post = requests.post(
+                    'http://127.0.0.1:5000/sensor_settings', json=[button_id]).json()
+            return [True, dash.no_update]
+        post = requests.post(
+                    'http://127.0.0.1:5000/magnetometer_calibration_end', json=['end']).json()
+        return [False, html.Div(post[0])]
+    
+    # 7. Замена кнопки Start на Stop
     @dash.callback(
         Output('button_start', 'color'),
         Output('button_start', 'children'),
@@ -128,8 +147,7 @@ def callback(dash):
         return ['primary', 'Start']
     
     
-    # 7. Start/Stop
-   # Общая работа кнопок
+    # 8. Start/Stop
     @dash.callback(
         Output("button_sensor_settings", "disabled", allow_duplicate=True),
         Output("button_search", "disabled", allow_duplicate=True),
@@ -171,7 +189,7 @@ def callback(dash):
                     None, False]
 
    
-   # 8. Приём данных с webSocket для графика
+   # 9. Приём данных с webSocket для графика
     dash.clientside_callback(update_graph,
                          Output("graph", "figure"),
                          Input("ws", "message"),
@@ -189,13 +207,16 @@ def buttons_main_callback(dash):
         [Output(f'{page["relative_path"]}', 'disabled') for page in dash.page_registry.values()],
         Input('url', 'pathname'),
         prevent_initial_call=True,
-        background=True,
+        # background=True,
+        # running=[
+        #     (Output("button_search", "disabled"), True, False),
+        # ],
     )
     def disabled(path):
         # Проверка запущен ли webserver (output.py)
         if is_running('output.py') == False:
             os.system('python3 output.py &')
-            time.sleep(0.5)
+            time.sleep(0.75)
             
         # Находим кнопку, id которой совпадает с page и по индексу в списке гасим
         command = [False for page in dash.page_registry.values()]
