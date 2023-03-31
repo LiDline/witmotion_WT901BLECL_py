@@ -224,8 +224,6 @@ def buttons_main_callback(dash):
         # Меняем её disable на False
         del command[index]
         command.insert(index, True)
-        
         post = requests.post(
             'http://127.0.0.1:5000/sensor_selection', json=path).json() # Отправим через что считываем (usb/bluetooth)
-
         return command
