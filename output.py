@@ -53,7 +53,6 @@ async def chosen_address_output():
             return [f'input "{address}" is available.']
 
     elif sensor == '/bluetooth':
-        # def bluetooth_run_async():
         async with BleakClient('DB:EE:85:7F:44:09') as client:
             if client.is_connected:
                 return [f'input "{address}" is available.']
@@ -113,21 +112,47 @@ df = create_table()
 # Создаём вебсокеты
 @app.websocket("/ws")
 async def data():
-    # address = requests.get('http://127.0.0.1:5000/chosen_address_output').json()[0]
-    # command = requests.get('http://127.0.0.1:5000/executed_order').json()[0]
-    socket = serial.Serial(address, 115200, timeout=rate)
-    t_start = time.perf_counter()
+    
+    notify_uuid = "0000ffe4-0000-1000-8000-00805f9a34fb" # UUID для считывания (Одинаковы для WT901BLE)
+    write_uuid = "0000ffe9-0000-1000-8000-00805f9a34fb" # UUID для записи
+    async def bluetooth_run_async():
+            async with BleakClient('DB:EE:85:7F:44:09') as client:
+                while command:
+                    await client.start_notify(notify_uuid, _notification_handler)
+    
+    def _notification_handler(sender, data: bytearray):
+            header_bit = data[0]
+            assert header_bit == 0x55
+            flag_bit = data[1] # 0x51 or 0x71
+            assert flag_bit == 0x61 or flag_bit == 0x71
+            print(decoded_data(data))
+    
+    if sensor == '/usb':
+        socket = serial.Serial(address, 115200, timeout=rate)
+        t_start = time.perf_counter()
 
-    while command:
-        data = socket.read(20)
-        a, w, A = decoded_data(data)
-        df.loc[len(df.index)] = concatenate(
-            [[round(time.perf_counter() - t_start, 2)], a, w, A])
-        output = json.dumps([
-            (df[df.columns[i]].tail(50)).to_list() for i in range(len(df.axes[1]))
-        ])
-        await websocket.send(output)
-        # command = requests.get('http://127.0.0.1:5000/executed_order').json()[0]
+        while command:
+            data = socket.read(20)
+            a, w, A = decoded_data(data)
+            df.loc[len(df.index)] = concatenate(
+                [[round(time.perf_counter() - t_start, 2)], a, w, A])
+            output = json.dumps([
+                (df[df.columns[i]].tail(50)).to_list() for i in range(len(df.axes[1]))
+            ])
+            await websocket.send(output)        
+    elif sensor == '/bluetooth':   
+        nest_asyncio.apply()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(asyncio.run(bluetooth_run_async()))        
+        
+        # df.loc[len(df.index)] = concatenate(
+        #         [[round(time.perf_counter() - t_start, 2)], a, w, A])
+        # output = json.dumps([
+        #         (df[df.columns[i]].tail(50)).to_list() for i in range(len(df.axes[1]))
+        #     ])
+        # await websocket.send(output)
+        
+        
     df.to_csv('res.csv')
     sys.exit()  # Заменить на post!
 
