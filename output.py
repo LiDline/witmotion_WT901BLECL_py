@@ -8,6 +8,7 @@ import sys
 from bleak import BleakClient, BleakScanner
 import asyncio
 import nest_asyncio
+import os
 
 
 from func.general_operations import di_commands
@@ -37,9 +38,9 @@ async def sensor_selection():
 async def ports():
     if sensor == '/usb':
         return serial_ports()
-
-    devices = await BleakScanner.discover(timeout=1)
-    return [dev.address for dev in devices if 'WT901' in dev.name]
+    elif sensor == '/bluetooth':
+        devices = await BleakScanner.discover(timeout=1)
+        return [dev.address for dev in devices if 'WT901' in dev.name]
 
 
 # Для приёма выбранного адреса
@@ -48,12 +49,14 @@ async def chosen_address_output():
     global address, socket, client  # По другому не придумал...
 
     address = await request.get_json()
+    print(sensor)
     if sensor == '/usb':
         socket = serial.Serial(address, 115200, timeout=10)
         if socket.open:
             return [f'input "{address}" is available.']
-
+    
     elif sensor == '/bluetooth':
+        
         client = BleakClient(address)
         await client.connect()
         return [f'input "{address}" is available.']
@@ -120,9 +123,8 @@ async def data():
 
     async def bluetooth_run_async():
         while command:
+
             await client.start_notify(notify_uuid, _notification_handler)
-            # if command == 'False':
-            #     await client.disconnect()  # иначе не умрёт
 
     def _notification_handler(sender, data: bytearray):
         header_bit = data[0]
@@ -130,6 +132,10 @@ async def data():
         flag_bit = data[1]  # 0x51 or 0x71
         assert flag_bit == 0x61 or flag_bit == 0x71
         print(command, decoded_data(data))
+        if command == False:
+            os.system("rfkill block bluetooth")
+            sys.exit()
+
 # =======================================================================================
     if sensor == '/usb':
         socket = serial.Serial(address, 115200, timeout=rate)

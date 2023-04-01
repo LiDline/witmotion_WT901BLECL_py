@@ -23,6 +23,7 @@ def callback(dash):
         prevent_initial_call=True,
     )
     def selected(bt1):
+        time.sleep(0.5)
         # Иначе ругается на requests (при нажатии на Stop прога идёт сюда)
         try:
             ports = requests.get(
@@ -185,8 +186,11 @@ def callback(dash):
                 post = requests.post(
                     'http://127.0.0.1:5000/start_stop', json=False).json()
             except:
-                # При остановке считывания я убиваю output.py
-                os.system('python3 output.py &')
+                pass
+            
+            # При остановке считывания я убиваю output.py
+            os.system('python3 output.py &')
+            
             return [True, False, False, html.Div(), html.Div(),
                     'Server response: reading complete, data is saved in the project folder in "res.csv"!',
                     None, False]
@@ -232,5 +236,5 @@ def buttons_main_callback(dash):
             'http://127.0.0.1:5000/sensor_selection', json=path).json()  # Отправим через что считываем (usb/bluetooth)
         # if post[0] == '/bluetooth':
         #     os.system("rfkill unblock bluetooth")
-            
+
         return command
