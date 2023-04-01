@@ -29,7 +29,7 @@ rate = 10  # default
 async def sensor_selection():
     global sensor
     sensor = await request.get_json()
-    return [f'The selected sensor is {sensor}']
+    return [sensor]
 
 
 # Для отправки доступных адресов
@@ -46,6 +46,7 @@ async def ports():
 @app.post("/chosen_address_input")
 async def chosen_address_output():
     global address, socket, client  # По другому не придумал...
+
     address = await request.get_json()
     if sensor == '/usb':
         socket = serial.Serial(address, 115200, timeout=10)
@@ -53,9 +54,9 @@ async def chosen_address_output():
             return [f'input "{address}" is available.']
 
     elif sensor == '/bluetooth':
-        async with BleakClient('DB:EE:85:7F:44:09') as client:
-            if client.is_connected:
-                return [f'input "{address}" is available.']
+        client = BleakClient(address)
+        await client.connect()
+        return [f'input "{address}" is available.']
 
     return [f"input '{address}' isn't available. Please, push search button!"]
 
@@ -112,21 +113,24 @@ df = create_table()
 # Создаём вебсокеты
 @app.websocket("/ws")
 async def data():
-    
-    notify_uuid = "0000ffe4-0000-1000-8000-00805f9a34fb" # UUID для считывания (Одинаковы для WT901BLE)
-    write_uuid = "0000ffe9-0000-1000-8000-00805f9a34fb" # UUID для записи
+
+    # UUID для считывания (Одинаковы для WT901BLE)
+    notify_uuid = "0000ffe4-0000-1000-8000-00805f9a34fb"
+    write_uuid = "0000ffe9-0000-1000-8000-00805f9a34fb"  # UUID для записи
+
     async def bluetooth_run_async():
-            async with BleakClient('DB:EE:85:7F:44:09') as client:
-                while command:
-                    await client.start_notify(notify_uuid, _notification_handler)
-    
+        while command:
+            await client.start_notify(notify_uuid, _notification_handler)
+            # if command == 'False':
+            #     await client.disconnect()  # иначе не умрёт
+
     def _notification_handler(sender, data: bytearray):
-            header_bit = data[0]
-            assert header_bit == 0x55
-            flag_bit = data[1] # 0x51 or 0x71
-            assert flag_bit == 0x61 or flag_bit == 0x71
-            print(decoded_data(data))
-    
+        header_bit = data[0]
+        assert header_bit == 0x55
+        flag_bit = data[1]  # 0x51 or 0x71
+        assert flag_bit == 0x61 or flag_bit == 0x71
+        print(command, decoded_data(data))
+# =======================================================================================
     if sensor == '/usb':
         socket = serial.Serial(address, 115200, timeout=rate)
         t_start = time.perf_counter()
@@ -139,22 +143,21 @@ async def data():
             output = json.dumps([
                 (df[df.columns[i]].tail(50)).to_list() for i in range(len(df.axes[1]))
             ])
-            await websocket.send(output)        
-    elif sensor == '/bluetooth':   
+            await websocket.send(output)
+# =======================================================================================
+    elif sensor == '/bluetooth':
         nest_asyncio.apply()
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(asyncio.run(bluetooth_run_async()))        
-        
-        # df.loc[len(df.index)] = concatenate(
-        #         [[round(time.perf_counter() - t_start, 2)], a, w, A])
-        # output = json.dumps([
-        #         (df[df.columns[i]].tail(50)).to_list() for i in range(len(df.axes[1]))
-        #     ])
-        # await websocket.send(output)
-        
-        
+        # loop = asyncio.get_event_loop()
+        # loop.run_until_complete(asyncio.run(bluetooth_run_async()))
+        # loop.close()
+        asyncio.run(bluetooth_run_async())
+        # if command == 'False':
+        #         await client.disconnect()  # иначе не умрёт
+        #         print(command)
+        # os.system("rfkill block bluetooth")
+
     df.to_csv('res.csv')
-    sys.exit()  # Заменить на post!
+    sys.exit()
 
 
 if __name__ == "__main__":

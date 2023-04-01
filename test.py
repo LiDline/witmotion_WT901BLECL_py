@@ -1,14 +1,23 @@
-from bleak import BleakClient
-import nest_asyncio
 import asyncio
 
 
-async def bluetooth_run_async():
-    async with BleakClient('DB:EE:85:7F:44:09') as client:
-        x = client.is_connected
-        print("Connected: {0}.".format(x))
+async def waiter(event):
+    print('waiting for it ...')
+    await event.wait()
+    print('... got it!')
 
-# # nest_asyncio.apply()
-loop = asyncio.get_event_loop()
-loop.run_until_complete(asyncio.run(bluetooth_run_async()))
+async def main():
+    # Create an Event object.
+    event = asyncio.Event()
 
+    # Spawn a Task to wait until 'event' is set.
+    waiter_task = asyncio.create_task(waiter(event))
+
+    # Sleep for 1 second and set the event.
+    await asyncio.sleep(1)
+    event.set()
+
+    # Wait until the waiter task is finished.
+    await waiter_task
+
+asyncio.run(main())
