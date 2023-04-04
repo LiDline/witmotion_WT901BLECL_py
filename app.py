@@ -3,10 +3,11 @@ import dash_bootstrap_components as dbc
 import dash
 import os
 from dash import DiskcacheManager, CeleryManager
-from dash_extensions.enrich import html, Input, Output
+from dash_extensions.enrich import html
 
 
 from func.components.callbacks import buttons_main_callback
+from func.for_usb import is_running
 
 
 # Для background

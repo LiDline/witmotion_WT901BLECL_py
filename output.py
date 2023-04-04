@@ -8,7 +8,7 @@ import sys
 from bleak import BleakClient, BleakScanner
 import asyncio
 import nest_asyncio
-import os
+from func.for_bluetooth import Bluetooth
 
 
 from func.general_operations import di_commands
@@ -54,9 +54,9 @@ async def chosen_address_output():
         socket = serial.Serial(address, 115200, timeout=10)
         if socket.open:
             return [f'input "{address}" is available.']
-    
+
     elif sensor == '/bluetooth':
-        
+
         client = BleakClient(address)
         await client.connect()
         return [f'input "{address}" is available.']
@@ -116,30 +116,10 @@ df = create_table()
 # Создаём вебсокеты
 @app.websocket("/ws")
 async def data():
-
-    # UUID для считывания (Одинаковы для WT901BLE)
-    notify_uuid = "0000ffe4-0000-1000-8000-00805f9a34fb"
-    write_uuid = "0000ffe9-0000-1000-8000-00805f9a34fb"  # UUID для записи
-
-    async def bluetooth_run_async():
-        while command:
-
-            await client.start_notify(notify_uuid, _notification_handler)
-
-    def _notification_handler(sender, data: bytearray):
-        header_bit = data[0]
-        assert header_bit == 0x55
-        flag_bit = data[1]  # 0x51 or 0x71
-        assert flag_bit == 0x61 or flag_bit == 0x71
-        print(command, decoded_data(data))
-        if command == False:
-            os.system("rfkill block bluetooth")
-            sys.exit()
-
-# =======================================================================================
+    t_start = time.perf_counter()
+    
     if sensor == '/usb':
         socket = serial.Serial(address, 115200, timeout=rate)
-        t_start = time.perf_counter()
 
         while command:
             data = socket.read(20)
@@ -153,14 +133,14 @@ async def data():
 # =======================================================================================
     elif sensor == '/bluetooth':
         nest_asyncio.apply()
+        bluetooth = Bluetooth(command)
         # loop = asyncio.get_event_loop()
         # loop.run_until_complete(asyncio.run(bluetooth_run_async()))
         # loop.close()
-        asyncio.run(bluetooth_run_async())
-        # if command == 'False':
-        #         await client.disconnect()  # иначе не умрёт
-        #         print(command)
-        # os.system("rfkill block bluetooth")
+        func = bluetooth.bluetooth_run_async(client) 
+        asyncio.run(func)
+        
+        await client.disconnect() 
 
     df.to_csv('res.csv')
     sys.exit()
