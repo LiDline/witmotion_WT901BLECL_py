@@ -17,6 +17,9 @@ class Bluetooth():
     write_uuid = "0000ffe9-0000-1000-8000-00805f9a34fb"  # UUID для записи
 
     current_data = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    
+    def __init__(self, rate):
+        self.rate = rate
 
     # Для того, чтобы вытащить данные из start_notify
     def data(self):
@@ -32,8 +35,8 @@ class Bluetooth():
     async def bluetooth_run_async(self, client):
         await client.start_notify(self.notify_uuid, self._notification_handler)
         a, w, A = self.current_data[0], self.current_data[1], self.current_data[2]
-        
-        time.sleep(0.1) # Иначе шлёт данные по websocket каждые 0.01 сек
+
+        time.sleep(1/self.rate) # Иначе шлёт данные по websocket каждые 0.01 сек
         
         return a, w, A
         

@@ -6,7 +6,6 @@ from numpy import concatenate
 import serial
 import sys
 from bleak import BleakClient, BleakScanner
-import asyncio
 import nest_asyncio
 from func.for_bluetooth import Bluetooth
 
@@ -36,6 +35,11 @@ async def sensor_selection():
 # Для отправки доступных адресов
 @app.get("/available_ports")
 async def ports():
+    try:
+        await client.disconnect()   # На всякий случай отрубим то, что подключили 
+    except:
+        pass    
+    print(sensor)
     if sensor == '/usb':
         return serial_ports()
     elif sensor == '/bluetooth':
@@ -47,16 +51,20 @@ async def ports():
 @app.post("/chosen_address_input")
 async def chosen_address_output():
     global address, socket, client  # По другому не придумал...
-
+    
+    try:
+        await client.disconnect()
+    except:
+        pass
+    
     address = await request.get_json()
-    print(sensor)
+
     if sensor == '/usb':
         socket = serial.Serial(address, 115200, timeout=10)
         if socket.open:
             return [f'input "{address}" is available.']
 
     elif sensor == '/bluetooth':
-
         client = BleakClient(address)
         await client.connect()
         return [f'input "{address}" is available.']
@@ -68,9 +76,8 @@ async def chosen_address_output():
 async def chosen_address_input():
     return [address]
 
+
  # Start/Stop
-
-
 @app.post("/start_stop")
 async def start_stop():
     global command
@@ -85,7 +92,7 @@ async def executed_order():
     return [command]
 
 
-# Settings
+# Каллибровка
 @app.post("/sensor_settings")
 async def sensor_settings():
     settings = await request.get_json()
@@ -103,6 +110,7 @@ async def sensor_settings():
     return [f'Server response: command {settings[0]} is complete!']
 
 
+# Завершение магнитной калибровки
 @app.post("/magnetometer_calibration_end")
 async def magnetometer_calibration_end():
     end_step = await request.get_json()
@@ -120,7 +128,6 @@ async def data():
 
     if sensor == '/usb':
         socket = serial.Serial(address, 115200, timeout=rate)
-
         while command:
             data = socket.read(20)
             a, w, A = decoded_data(data)
@@ -133,7 +140,7 @@ async def data():
 # =======================================================================================
     elif sensor == '/bluetooth':
         nest_asyncio.apply()
-        bluetooth = Bluetooth()
+        bluetooth = Bluetooth(rate)
 
         t_start = time.perf_counter()
 
@@ -148,13 +155,14 @@ async def data():
             ])
 
             await websocket.send(output)
-
-        await client.disconnect()
-
+    
     df.to_csv('res.csv')
-    sys.exit()
+    try: 
+        await client.stop_notify("0000ffe4-0000-1000-8000-00805f9a34fb")
+        await client.disconnect()   # Программа крашится с ошибкой, да и хер с ней, я так и задумывал
+    except:
+        sys.exit()
 
 
 if __name__ == "__main__":
-    app.run(port=5000,
-            )
+    app.run(port=5000)

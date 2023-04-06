@@ -3,51 +3,64 @@ from dash_extensions.enrich import html, Input, Output, State, dcc
 import requests
 import time
 import os
+from dash import DiskcacheManager, CeleryManager
+
+
+# Для background
+if 'REDIS_URL' in os.environ:
+    # Use Redis & Celery if REDIS_URL set as an env variable
+    from celery import Celery
+    celery_app = Celery(__name__, broker=os.environ['REDIS_URL'], backend=os.environ['REDIS_URL'])
+    background_callback_manager = CeleryManager(celery_app)
+else:
+    # Diskcache for non-production apps when developing locally
+    import diskcache
+    cache = diskcache.Cache("./cache")
+    background_callback_manager = DiskcacheManager(cache)
 
 
 from func.for_usb import is_running
 
 
 def callback(dash):
-
     # Client-side function (for performance) that updates the graph.
     with open('func/graph.js') as f:    # plot the data
         update_graph = f.read()
 
     # 1. Обновление поля Selected | активация Selected и Device connection
-
     @dash.callback(
         Output('dropdown', 'disabled', allow_duplicate=True),
         Output('dropdown', 'options'),
         Input('button_search', 'n_clicks'),
+        State('url', 'pathname'),
         prevent_initial_call=True,
     )
-    def selected(bt1):
-        time.sleep(0.5)
-        # Иначе ругается на requests (при нажатии на Stop прога идёт сюда)
+    def selected(bt1, path):
         try:
+            post = requests.post(
+            'http://127.0.0.1:5000/sensor_selection', json=path).json()  # Отправим через что считываем (usb/bluetooth)
             ports = requests.get(
                 'http://127.0.0.1:5000/available_ports').json()
             return [False, ports]
         except:
             return [True, dash.no_update]
 
-    # 2. Отправка выбранного адреса на back
 
+    # 2. Отправка выбранного адреса на back
     @dash.callback(
         Output('message_from_post_server', 'children', allow_duplicate=True),
         Input('dropdown', 'value'),
-        prevent_initial_call=True,
+        prevent_initial_call=True,     
     )
     def activations(value):
         if value != None:
             post = requests.post(
                 'http://127.0.0.1:5000/chosen_address_input', json=value).json()
             return [f'Server response: {post[0]}']
-        return dash.no_update
+        return ['Please, select an address']
+
 
     # 3. Активация кнопок Sensor Settings и Start
-
     @dash.callback(
         Output('button_sensor_settings', 'disabled'),
         Output('button_sensor_settings', 'outline'),
@@ -55,14 +68,16 @@ def callback(dash):
         Output('button_start', 'outline'),
         Input('dropdown', 'value'),
         prevent_initial_call=True,
+        background=True,
+        manager=background_callback_manager
     )
     def disabled(value):
         if value != None:
             return [False, False, False, False]
         return [True, True, True, True]
 
-    # 4. Открытие кнопки Settings
 
+    # 4. Открытие кнопки Settings
     @dash.callback(
         Output("collapse_sensor_settings", "is_open"),
         Input("button_sensor_settings", "n_clicks"),
@@ -80,8 +95,8 @@ def callback(dash):
                 return not is_open
             return is_open
 
-    # 5. Работа кнопок в Settings (кроме Magnetometer calibration)
 
+    # 5. Работа кнопок в Settings (кроме Magnetometer calibration)
     @dash.callback(
         Output('message_from_post_server', 'children', allow_duplicate=True),
         Input('accelerometer_calibration', 'n_clicks'),
@@ -115,8 +130,8 @@ def callback(dash):
 
         return html.Div(post[0])
 
-    # 6. Кнопка Magnetometer calibration
 
+    # 6. Кнопка Magnetometer calibration
     @dash.callback(
         Output("modal", "is_open"),
         Output('message_from_post_server', 'children'),
@@ -135,6 +150,7 @@ def callback(dash):
             'http://127.0.0.1:5000/magnetometer_calibration_end', json=['end']).json()
         return [False, html.Div(post[0])]
 
+
     # 7. Замена кнопки Start на Stop
     @dash.callback(
         Output('button_start', 'color'),
@@ -148,8 +164,8 @@ def callback(dash):
             return ["danger", 'Save & Stop']
         return ['primary', 'Start']
 
-    # 8. Start/Stop
 
+    # 8. Start/Stop
     @dash.callback(
         Output("button_sensor_settings", "disabled", allow_duplicate=True),
         Output("button_search", "disabled", allow_duplicate=True),
@@ -193,7 +209,8 @@ def callback(dash):
             
             return [True, False, False, html.Div(), html.Div(),
                     'Server response: reading complete, data is saved in the project folder in "res.csv"!',
-                    None, False]
+                    None, True]
+
 
    # 9. Приём данных с webSocket для графика
     dash.clientside_callback(update_graph,
@@ -201,8 +218,7 @@ def callback(dash):
                              Input("ws", "message"),
                              prevent_initial_call=True
                              )
-
-    # ===================================================================================
+# ===================================================================================
 
 
 #  Callback главных кнопок в app.py
@@ -214,10 +230,6 @@ def buttons_main_callback(dash):
          for page in dash.page_registry.values()],
         Input('url', 'pathname'),
         prevent_initial_call=True,
-        # background=True,
-        # running=[
-        #     (Output("button_search", "disabled"), True, False),
-        # ],
     )
     def disabled(path):
         # Проверка запущен ли webserver (output.py)
@@ -232,9 +244,5 @@ def buttons_main_callback(dash):
         # Меняем её disable на False
         del command[index]
         command.insert(index, True)
-        post = requests.post(
-            'http://127.0.0.1:5000/sensor_selection', json=path).json()  # Отправим через что считываем (usb/bluetooth)
-        # if post[0] == '/bluetooth':
-        #     os.system("rfkill unblock bluetooth")
 
         return command
