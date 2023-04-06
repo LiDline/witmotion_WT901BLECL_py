@@ -117,7 +117,7 @@ df = create_table()
 @app.websocket("/ws")
 async def data():
     t_start = time.perf_counter()
-    
+
     if sensor == '/usb':
         socket = serial.Serial(address, 115200, timeout=rate)
 
@@ -133,14 +133,23 @@ async def data():
 # =======================================================================================
     elif sensor == '/bluetooth':
         nest_asyncio.apply()
-        bluetooth = Bluetooth(command)
-        # loop = asyncio.get_event_loop()
-        # loop.run_until_complete(asyncio.run(bluetooth_run_async()))
-        # loop.close()
-        func = bluetooth.bluetooth_run_async(client) 
-        asyncio.run(func)
-        
-        await client.disconnect() 
+        bluetooth = Bluetooth()
+
+        t_start = time.perf_counter()
+
+        while command:
+            a, w, A = await bluetooth.bluetooth_run_async(client)
+
+            df.loc[len(df.index)] = concatenate(
+                [[round(time.perf_counter() - t_start, 2)], a, w, A])
+
+            output = json.dumps([
+                (df[df.columns[i]].tail(50)).to_list() for i in range(len(df.axes[1]))
+            ])
+
+            await websocket.send(output)
+
+        await client.disconnect()
 
     df.to_csv('res.csv')
     sys.exit()

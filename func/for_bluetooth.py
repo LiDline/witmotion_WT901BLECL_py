@@ -1,11 +1,8 @@
-import json
 import time
 from bleak import BleakScanner
-from numpy import concatenate
-from quart import websocket
 
 
-from func.general_operations import create_table, decoded_data
+from func.general_operations import decoded_data
 
 
 async def run():
@@ -21,9 +18,6 @@ class Bluetooth():
 
     current_data = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
 
-    def __init__(self, command):
-        self.command = command
-
     # Для того, чтобы вытащить данные из start_notify
     def data(self):
         return self.current_data
@@ -36,17 +30,10 @@ class Bluetooth():
         self.current_data = decoded_data(data)
 
     async def bluetooth_run_async(self, client):
-        t_start = time.perf_counter()
-        df = create_table()
-
-        while self.command:
-            await client.start_notify(self.notify_uuid, self._notification_handler)
-            a, w, A = self.current_data[0], self.current_data[1], self.current_data[2]
-            df.loc[len(df.index)] = concatenate(
-                [[round(time.perf_counter() - t_start, 2)], a, w, A])
-    
-            output = json.dumps([
-                (df[df.columns[i]].tail(50)).to_list() for i in range(len(df.axes[1]))
-            ])
-            print(a)
-            await websocket.send(output)
+        await client.start_notify(self.notify_uuid, self._notification_handler)
+        a, w, A = self.current_data[0], self.current_data[1], self.current_data[2]
+        
+        time.sleep(0.1) # Иначе шлёт данные по websocket каждые 0.01 сек
+        
+        return a, w, A
+        
