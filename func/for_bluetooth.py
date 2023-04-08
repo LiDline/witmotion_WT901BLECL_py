@@ -1,23 +1,61 @@
+import asyncio
 import time
-from bleak import BleakScanner
+from bleak import BleakClient, BleakScanner
 
 
-from func.general_operations import decoded_data
+from func.general_operations import decoded_data, di_commands, di_hz
 
 
+"""Методы для обработки Bluetooth"""
+
+# UUID для считывания (Одинаковы для WT901BLE)
+notify_uuid = "0000ffe4-0000-1000-8000-00805f9a34fb"
+def write_uuid_func():
+    write_uuid = "0000ffe9-0000-1000-8000-00805f9a34fb"  # UUID для записи
+    return write_uuid
+
+# Поиск ближайших датчиков
 async def run():
     devices = await BleakScanner.discover(timeout=1)
     d = [dev.address for dev in devices if 'WT901' in dev.name]
     return d
 
 
-class Bluetooth():
-    # UUID для считывания (Одинаковы для WT901BLE)
-    notify_uuid = "0000ffe4-0000-1000-8000-00805f9a34fb"
-    write_uuid = "0000ffe9-0000-1000-8000-00805f9a34fb"  # UUID для записи
+# Калибровка гироскопа и акселерометра для Bluetooth 5.0
+async def ble_calibrate_gyr_and_acc(client: BleakClient):
+    await client.write_gatt_char(
+        write_uuid_func(),
+        di_commands('accelerometer_calibration'))
+    await asyncio.sleep(4)
+    await client.write_gatt_char(
+        write_uuid_func(),
+        di_commands('exit_calibration_mode'))
 
-    current_data = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+
+# Переключение Algorithm Transition для Bluetooth 5.0 
+async def ble_algorithm_transition(client: BleakClient, axis):
+    await client.write_gatt_char(
+        write_uuid_func(), 
+        di_commands(axis))
+    await client.write_gatt_char(
+        write_uuid_func(),
+        di_commands('save_configuration'))
+
+
+# Изменение частоты обновления данных для Bluetooth 5.0
+async def ble_return_rate(client: BleakClient, rate):
+    await client.write_gatt_char(
+        write_uuid_func(), 
+        di_hz(rate))
+    await client.write_gatt_char(
+        write_uuid_func(),
+        di_commands('save_configuration'))
     
+
+# Класс для принятия и обработки данных
+class Bluetooth():
+    current_data = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+
     def __init__(self, rate):
         self.rate = rate
 
@@ -33,10 +71,10 @@ class Bluetooth():
         self.current_data = decoded_data(data)
 
     async def bluetooth_run_async(self, client):
-        await client.start_notify(self.notify_uuid, self._notification_handler)
+        await client.start_notify(notify_uuid, self._notification_handler)
         a, w, A = self.current_data[0], self.current_data[1], self.current_data[2]
 
-        time.sleep(1/self.rate) # Иначе шлёт данные по websocket каждые 0.01 сек
-        
+        # Иначе шлёт данные по websocket каждые 0.01 сек
+        time.sleep(1/self.rate)
+
         return a, w, A
-        

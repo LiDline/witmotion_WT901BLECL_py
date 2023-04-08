@@ -7,7 +7,6 @@ from dash_extensions.enrich import html
 
 
 from func.components.callbacks import buttons_main_callback
-from func.for_usb import is_running
 
 
 # Для background

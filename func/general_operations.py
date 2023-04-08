@@ -1,4 +1,6 @@
 import pandas as pd
+import psutil
+import os
 
 
 """Общие для USB и Bluetooth методы"""
@@ -35,3 +37,14 @@ def decoded_data(data):
     Ax, Ay, Az = decoded[6] / 32768.0 * 180, decoded[7] / 32768.0 * 180, decoded[8] / 32768.0 * 180
 
     return [ax, ay, az], [wx, wy, wz], [Ax, Ay, Az]    
+
+
+# Проверка включен ли output.py
+def is_running(script):
+    for q in psutil.process_iter():
+        if q.name().startswith('python'):
+            if len(q.cmdline())>1 and script in q.cmdline()[1] and q.pid !=os.getpid():
+                print("'{}' Process is already running".format(script))
+                return True
+
+    return False

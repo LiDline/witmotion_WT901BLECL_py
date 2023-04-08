@@ -7,7 +7,7 @@ import serial
 import sys
 from bleak import BleakClient, BleakScanner
 import nest_asyncio
-from func.for_bluetooth import Bluetooth
+from func.for_bluetooth import Bluetooth, ble_algorithm_transition, ble_calibrate_gyr_and_acc, ble_return_rate, write_uuid_func
 
 
 from func.general_operations import di_commands
@@ -39,7 +39,6 @@ async def ports():
         await client.disconnect()   # На всякий случай отрубим то, что подключили 
     except:
         pass    
-    print(sensor)
     if sensor == '/usb':
         return serial_ports()
     elif sensor == '/bluetooth':
@@ -51,25 +50,25 @@ async def ports():
 @app.post("/chosen_address_input")
 async def chosen_address_output():
     global address, socket, client  # По другому не придумал...
+    address = await request.get_json()
+    
+    if address == None:
+        try:
+            await client.disconnect()
+        except:
+            socket.disconnect()
     
     try:
-        await client.disconnect()
-    except:
-        pass
-    
-    address = await request.get_json()
-
-    if sensor == '/usb':
-        socket = serial.Serial(address, 115200, timeout=10)
-        if socket.open:
+        if sensor == '/usb':
+            socket = serial.Serial(address, 115200, timeout=10)
+            if socket.open:
+                return [f'input "{address}" is available.']
+        elif sensor == '/bluetooth':
+            client = BleakClient(address)
+            await client.connect()
             return [f'input "{address}" is available.']
-
-    elif sensor == '/bluetooth':
-        client = BleakClient(address)
-        await client.connect()
-        return [f'input "{address}" is available.']
-
-    return [f"input '{address}' isn't available. Please, push search button!"]
+    except:
+        return [f"input '{address}' isn't available. Please, push search button!"]
 
 
 @app.get("/chosen_address_output")
@@ -92,21 +91,32 @@ async def executed_order():
     return [command]
 
 
-# Каллибровка
+# Калибровка
 @app.post("/sensor_settings")
 async def sensor_settings():
     settings = await request.get_json()
-
-    if settings[0] == 'accelerometer_calibration':
-        usb_calibrate_gyr_and_acc(socket)
-    elif settings[0] == '6_DOF' or settings[0] == '9_DOF':
-        usb_algorithm_transition(socket, settings[0])
-    elif settings[0] in [0.2, 0.5, 1, 2, 5, 10, 20, 50]:
-        global rate
-        rate = settings[0]
-        usb_return_rate(socket, settings[0])
-    elif settings[0] == 'magnetometer_calibration':
-        socket.write(di_commands('magnetometer_calibration'))
+    global rate
+    
+    if sensor == '/usb':
+        if settings[0] == 'accelerometer_calibration':
+            usb_calibrate_gyr_and_acc(socket)
+        elif settings[0] == '6_DOF' or settings[0] == '9_DOF':
+            usb_algorithm_transition(socket, settings[0])
+        elif settings[0] in [0.2, 0.5, 1, 2, 5, 10, 20, 50]:
+            rate = settings[0]
+            usb_return_rate(socket, settings[0])
+        elif settings[0] == 'magnetometer_calibration':
+            socket.write(di_commands('magnetometer_calibration'))
+    elif sensor == '/bluetooth':
+        if settings[0] == 'accelerometer_calibration':
+            await ble_calibrate_gyr_and_acc(client)    
+        elif settings[0] == '6_DOF' or settings[0] == '9_DOF':
+            await ble_algorithm_transition(client, settings[0])   
+        elif settings[0] in [0.2, 0.5, 1, 2, 5, 10, 20, 50]:
+            rate = settings[0]    
+            await ble_return_rate(client, settings[0])  
+        elif settings[0] == 'magnetometer_calibration':
+            await client.write_gatt_char(write_uuid_func(), di_commands('magnetometer_calibration'))      
     return [f'Server response: command {settings[0]} is complete!']
 
 
@@ -114,7 +124,10 @@ async def sensor_settings():
 @app.post("/magnetometer_calibration_end")
 async def magnetometer_calibration_end():
     end_step = await request.get_json()
-    socket.write(di_commands('exit_calibration_mode'))
+    if sensor == '/usb':
+        socket.write(di_commands('exit_calibration_mode'))
+    elif sensor == '/bluetooth':
+        await client.write_gatt_char(write_uuid_func(), di_commands('exit_calibration_mode'))          
     return [f'Server response: command magnetometer_calibration is end!']
 
 
@@ -137,7 +150,7 @@ async def data():
                 (df[df.columns[i]].tail(50)).to_list() for i in range(len(df.axes[1]))
             ])
             await websocket.send(output)
-# =======================================================================================
+            
     elif sensor == '/bluetooth':
         nest_asyncio.apply()
         bluetooth = Bluetooth(rate)

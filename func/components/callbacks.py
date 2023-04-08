@@ -19,7 +19,7 @@ else:
     background_callback_manager = DiskcacheManager(cache)
 
 
-from func.for_usb import is_running
+from func.general_operations import is_running
 
 
 def callback(dash):
@@ -53,10 +53,16 @@ def callback(dash):
         prevent_initial_call=True,     
     )
     def activations(value):
+        print(value)
         if value != None:
             post = requests.post(
                 'http://127.0.0.1:5000/chosen_address_input', json=value).json()
             return [f'Server response: {post[0]}']
+        try:
+            post = requests.post(
+                    'http://127.0.0.1:5000/chosen_address_input', json=None).json()
+        except:
+            pass
         return ['Please, select an address']
 
 
