@@ -1,7 +1,7 @@
 # WITMOTION WT901BLECL with Python
 Здесь представлено небольшое web-приложение для использования датчика WT901BLECL (через USB и bluetooth) средствами Python. Вся информация о датчике находится [тут](https://github.com/WITMOTION/WT901BLECL). Помимо этой документации, советую посмотреть документацию на используемый в датчике сенсор [WT901](https://images-na.ssl-images-amazon.com/images/I/B11fVGszLsS.pdf). В репозитории 2 ветки: 
 1. master - реализация на plotly [dash](https://dash.plotly.com/installation) (100% реализация, баг: кривая работа поля выбора доступных датчиков. Решение: не нажимайте сразу кнопку Start);
-2. draft - реализация на python (100% реализация);
+2. draft - реализация на python (100% реализация);__
 Помимо этого существует [репозиторий](https://github.com/LiDline/witmotion_wt901blecl_ts), где данное web-приложение реализовано на react.
 
 
