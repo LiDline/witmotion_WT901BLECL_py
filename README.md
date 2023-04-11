@@ -76,4 +76,4 @@ sudo chmod a+rw /dev/ttyUSB0
 
 
 ## 5. Другая версия
-Помимо этого существует [репозиторий](https://github.com/LiDline/witmotion_wt901blecl_ts), где данное web-приложение реализовано на react.
+Помимо этого, существует [репозиторий](https://github.com/LiDline/witmotion_wt901blecl_ts), где данное web-приложение реализовано на react.
